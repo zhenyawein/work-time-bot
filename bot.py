@@ -180,7 +180,6 @@ def start(update, context):
 📋 Доступные команды:
 /start - Начало работы
 /add_action - Добавить выполненное действие
-/report - Выгрузить отчет за период
 /today - Показать сегодняшний день
 /reset_today - Сбросить сегодняшний день (для тестирования)
 
@@ -190,8 +189,7 @@ def start(update, context):
     from telegram import ReplyKeyboardMarkup, KeyboardButton
     keyboard = [
         [KeyboardButton("🟢 Начало рабочего дня"), KeyboardButton("🔴 Конец рабочего дня")],
-        [KeyboardButton("📝 Добавить действие"), KeyboardButton("📊 Отчет")],
-        [KeyboardButton("📅 Сегодня")]
+        [KeyboardButton("📝 Добавить действие"), KeyboardButton("📅 Сегодня")]
     ]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
     
@@ -352,14 +350,13 @@ def handle_overwrite_callback(update, context):
 def add_action_start(update, context):
     """Начало добавления выполненного действия"""
     update.message.reply_text(
-        "📝 *Опишите выполненное действие:*\n\n"
+        "📝 Опишите выполненное действие:\n\n"
         "Например:\n"
         "• 'Монтаж электропроводки в квартире'\n"
         "• 'Установка розеток и выключателей'\n"
         "• 'Прокладка кабеля ВВГнг 3x2.5'\n"
         "• 'Подключение щитка освещения'\n"
-        "• 'Замена электропроводки на кухне'",
-        parse_mode='Markdown'
+        "• 'Замена электропроводки на кухне'"
     )
 
 def add_action_complete(update, context):
@@ -369,7 +366,7 @@ def add_action_complete(update, context):
         return
     
     # Проверяем, что это не нажатие на другие кнопки
-    button_texts = ["🟢 Начало рабочего дня", "🔴 Конец рабочего дня", "📝 Добавить действие", "📊 Отчет", "📅 Сегодня"]
+    button_texts = ["🟢 Начало рабочего дня", "🔴 Конец рабочего дня", "📝 Добавить действие", "📅 Сегодня"]
     if update.message.text in button_texts:
         return
     
@@ -382,10 +379,9 @@ def add_action_complete(update, context):
     db.add_work_task(user_id, today, action_description)
     
     update.message.reply_text(
-        f"✅ *Выполненное действие добавлено!*\n\n"
-        f"📅 *Дата:* {today_formatted}\n"
-        f"📝 *Действие:* {action_description}",
-        parse_mode='Markdown'
+        f"✅ Выполненное действие добавлено!\n\n"
+        f"📅 Дата: {today_formatted}\n"
+        f"📝 Действие: {action_description}"
     )
 
 # ============================
@@ -401,32 +397,32 @@ def today_info(update, context):
     work_day = db.get_work_day(user_id, today)
     actions = db.get_work_tasks(user_id, today)
     
-    response = [f"📅 *Сегодня:* {today_formatted}"]
+    response = [f"📅 Сегодня: {today_formatted}"]
     
     if work_day:
         if work_day['start_time']:
-            response.append(f"🟢 *Начало:* {work_day['start_time']}")
+            response.append(f"🟢 Начало: {work_day['start_time']}")
         else:
             response.append("❌ Начало дня не установлено")
             
         if work_day['end_time'] and work_day['end_time'] != work_day['start_time']:
-            response.append(f"🔴 *Конец:* {work_day['end_time']}")
+            response.append(f"🔴 Конец: {work_day['end_time']}")
             actual_hours, work_hours_with_lunch = calculate_work_hours(work_day['start_time'], work_day['end_time'])
-            response.append(f"⏱ *Фактически:* {actual_hours:.1f} часов")
-            response.append(f"🍽 *С учетом обеда:* {work_hours_with_lunch:.1f} часов")
+            response.append(f"⏱ Фактически: {actual_hours:.1f} часов")
+            response.append(f"🍽 С учетом обеда: {work_hours_with_lunch:.1f} часов")
         else:
             response.append("❌ Конец дня не установлен")
     else:
         response.append("❌ Рабочий день не начат")
     
     if actions:
-        response.append("\n✅ *Выполненные действия:*")
+        response.append("\n✅ Выполненные действия:")
         for i, action in enumerate(actions, 1):
             response.append(f"  {i}. {action}")
     else:
         response.append("\n❌ Действия не добавлены")
     
-    update.message.reply_text("\n".join(response), parse_mode='Markdown')
+    update.message.reply_text("\n".join(response))
 
 # ============================
 # ЗАПУСК БОТА
@@ -444,7 +440,6 @@ def main():
         # Добавляем обработчики кнопок
         dispatcher.add_handler(MessageHandler(Filters.regex("🟢 Начало рабочего дня"), start_work_day))
         dispatcher.add_handler(MessageHandler(Filters.regex("🔴 Конец рабочего дня"), end_work_day))
-        dispatcher.add_handler(MessageHandler(Filters.regex("📊 Отчет"), today_info))  # Временно упростим
         dispatcher.add_handler(MessageHandler(Filters.regex("📝 Добавить действие"), add_action_start))
         dispatcher.add_handler(MessageHandler(Filters.regex("📅 Сегодня"), today_info))
         
