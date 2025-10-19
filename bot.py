@@ -2,7 +2,6 @@ import os
 import logging
 import sqlite3
 from datetime import datetime, date, timedelta
-from typing import Dict, Tuple, List
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackQueryHandler, ContextTypes
 
@@ -152,7 +151,7 @@ def format_date(date_str: str) -> str:
     except ValueError:
         return date_str
 
-def calculate_work_hours(start_time: str, end_time: str) -> Tuple[float, float]:
+def calculate_work_hours(start_time: str, end_time: str):
     """Расчет рабочих часов: фактически и с учетом обеда"""
     try:
         start = datetime.strptime(start_time, '%H:%M')
@@ -167,6 +166,8 @@ def calculate_work_hours(start_time: str, end_time: str) -> Tuple[float, float]:
         return max(0, actual_hours), max(0, work_hours_with_lunch)
     except ValueError:
         return 0, 0
+
+# ... остальной код остается таким же как в предыдущей версии ...
 
 # ============================
 # ОСНОВНЫЕ КОМАНДЫ
@@ -686,3 +687,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
